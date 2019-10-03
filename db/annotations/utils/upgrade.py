@@ -5,10 +5,10 @@ import copy
 import shutil
 import sys
 
-from annotations.annotator import get_md
-from annotations.record import Variant
-from app import storage
-from utils import loadJSonConfig
+from ..annotator import get_md
+from ..record import Variant
+#from app import storage
+#from utils import loadJSonConfig
 
 
 annotation_server="anfisa.forome.org"
