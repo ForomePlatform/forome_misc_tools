@@ -6,9 +6,9 @@ from StringIO import StringIO
 
 import vcf
 
-from annotations import liftover
-from annotations import spliceai
-from beacons.beacon import Beacon
+import liftover
+import spliceai
+from ..beacons.beacon import Beacon
 
 
 def link_to_pmid(pmid):
