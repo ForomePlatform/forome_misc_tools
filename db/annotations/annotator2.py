@@ -24,7 +24,7 @@ if __name__ == '__main__':
     if (args.input):
         input_file = args.input
     else:
-        vcfs = glob.glob(os.path.join(working_dir,"*{}*vcf*".format(case)))
+        vcfs = glob.glob(os.path.join(working_dir,"*{}*vcf_utils*".format(case)))
         vcfs = [vcf for vcf in vcfs if not vcf.endswith('idx')]
         if len(vcfs) == 0:
             raise Exception("No VCF files are found in {}".format(working_dir))
@@ -90,7 +90,7 @@ if __name__ == '__main__':
         config["patient-ids"]   =  "${DIR}/samples-${CASE}.csv"
     elif patient_ids_file:
         config["patient-ids"]   = patient_ids_file
-    config["vcf"]           =  "${DIR}/" + input_file.replace(case_id, "${NAME}").replace(case, "${CASE}")
+    config["vcf_utils"]           =  "${DIR}/" + input_file.replace(case_id, "${NAME}").replace(case, "${CASE}")
     if (vep_json):
         config["vep-json"]      =  "${DIR}/" + vep_json
     config["anno-log"]      =  "annotations.log"

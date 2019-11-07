@@ -4,7 +4,7 @@ import os
 import sys
 from StringIO import StringIO
 
-import vcf
+import vcf_utils
 
 import liftover
 import spliceai
@@ -261,7 +261,7 @@ class Variant:
         versions["annotations_date"] = str(datetime.date.today())
         if (vcf_header):
             fsock = StringIO(vcf_header)
-            vcf_reader = vcf.Reader(fsock)
+            vcf_reader = vcf_utils.Reader(fsock)
             p = vcf_reader.metadata.get("source")
             if (isinstance(p, list)):
                 p = ", ".join(p)
@@ -301,7 +301,7 @@ class Variant:
                 vcf_string = "{}\n{}\n".format(vcf_header, row)
         if vcf_string:
             fsock = StringIO(vcf_string)
-            vcf_reader = vcf.Reader(fsock)
+            vcf_reader = vcf_utils.Reader(fsock)
             self.vcf_record = vcf_reader.next()
         else:
             self.vcf_record = None

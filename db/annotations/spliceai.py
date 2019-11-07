@@ -1,6 +1,5 @@
 # -*- coding: UTF-8 -*-
-from annotations import positions
-from annotations.db_connect import Connection
+from db.annotations.db_connect import Connection
 
 
 class SpliceAI(Connection):

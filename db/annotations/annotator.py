@@ -3,14 +3,14 @@ import json
 import os
 import time
 
-from annotations import case_utils, liftover
-from annotations.clinvar import ClinVar
-from annotations.gnomad import GnomAD
-from annotations.spliceai import SpliceAI
-from annotations.gtf import GTF
-from annotations.hgmd import HGMD
-from annotations.record import Variant
-from beacons.beacon import Beacon
+import case_utils, liftover
+from .clinvar import ClinVar
+from .gnomad import GnomAD
+from .spliceai import SpliceAI
+from .gtf import GTF
+from .hgmd import HGMD
+from .record import Variant
+from ..beacons.beacon import Beacon
 
 VEP_HOME = "/db/vep-93/ensembl-vep/"
 DB_HOME = "/db/data"
@@ -34,7 +34,7 @@ sample_command = "{vep_home}/vep" \
 def execute_vep(input, output = None, fork = 8):
     if (not output):
         x = input.split('.')
-        if (x[-1].lower() == 'vcf'):
+        if (x[-1].lower() == 'vcf_utils'):
             x = x[:-1]
         x.append("vep")
         x.append("json")
@@ -151,7 +151,7 @@ if __name__ == '__main__':
     parser.add_argument("-d", "--dir", dest="dir", help="Work directory", default=os.getcwd())
     parser.add_argument("-l", "--limit", dest="limit", type=int, help="Maximum number of variants to process")
     parser.add_argument("-s", "--start", dest="start", type=int, help="Start position: first variant to process", default=1)
-    parser.add_argument("--header", help="VCF Header file", default="header.vcf")
+    parser.add_argument("--header", help="VCF Header file", default="header.vcf_utils")
     parser.add_argument("--fork", help="Number of parallel processes", default=16, type=int)
     parser.add_argument("--force", help="Force re-annotation even if the same version", action='store_true')
 
@@ -178,7 +178,7 @@ if __name__ == '__main__':
     case_id = "{}_{}".format(case, platform)
     fam_file = "{}.fam".format(case)
     if (args.vep):
-        filtered_by_bed_vep_input = args.input if args.input else "{}_xbrowse.vep.filtered.vcf".format(case_id)
+        filtered_by_bed_vep_input = args.input if args.input else "{}_xbrowse.vep.filtered.vcf_utils".format(case_id)
         filtered_by_bed_vep_output = execute_vep(filtered_by_bed_vep_input, None, args.fork)
     else:
         filtered_by_bed_vep_output = args.input if args.input else "{}_xbrowse.vep.filtered.vep.json".format(case_id)
@@ -187,10 +187,10 @@ if __name__ == '__main__':
     print "file: {}".format(filtered_by_bed_vep_output)
 
     ##process_file("/Users/misha/projects/bgm/cases/bgm9001/tmp/f1.json")
-    if (header_file == "header.vcf" and not os.path.exists(header_file)):
+    if (header_file == "header.vcf_utils" and not os.path.exists(header_file)):
         if (filtered_by_bed_vep_output.endswith("vep.json")):
             f = filtered_by_bed_vep_output.split('.')
-            ff = f[:-2] + ["vcf"]
+            ff = f[:-2] + ["vcf_utils"]
             header_file = '.'.join(ff)
         with open (header_file) as vcf:
             header = ''.join([h for h in vcf if h.startswith('#')])

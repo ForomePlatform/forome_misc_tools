@@ -3,7 +3,7 @@ import gzip
 import json
 import time
 
-import vcf as pyvcf
+import vcf_utils as pyvcf
 
 from annotations.gnomad import GnomAD
 
@@ -191,7 +191,7 @@ class GnomAD_Import(GnomAD):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Import VCF files into gnomAD database")
     parser.add_argument("--files", "-f", "--input", "-i", help="Path to files to import",
-                        default=["/opt/data/gnomad/vcf/exomes/gnomad.exomes.r2.0.2.sites.vcf.bgz"],
+                        default=["/opt/data/gnomad/vcf_utils/exomes/gnomad.exomes.r2.0.2.sites.vcf_utils.bgz"],
                         required=False, nargs='+')
     parser.add_argument("--dbms", help="DBMS type to import into", default="MySQL")
     parser.add_argument("--database", help="Database/Namespace", default="gnom1")

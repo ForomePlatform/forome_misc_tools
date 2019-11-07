@@ -5,7 +5,7 @@ import json
 import time
 import sys
 
-import vcf as pyvcf
+import vcf_utils as pyvcf
 
 from annotations.spliceai import SpliceAI
 
@@ -98,9 +98,9 @@ class SpliceAI_Import(SpliceAI):
 
     def ingest(self, vcf):
         BATCH_SIZE = 1000
-       # with gzip.open(vcf, "rb") as input:
+       # with gzip.open(vcf_utils, "rb") as input:
         print "Ingesting: {}".format(vcf)
-        vcf_reader = pyvcf.Reader(filename = vcf,compressed = True)# '/home/trosman/work/whole_genome_filtered_spliceai_scores1000.vcf.gz' 
+        vcf_reader = pyvcf.Reader(filename = vcf,compressed = True)# '/home/trosman/work/whole_genome_filtered_spliceai_scores1000.vcf_utils.gz'
         #vcf_reader = pyvcf.Reader(input)
         t0 = time.time()
         list_of_values = []
@@ -152,7 +152,7 @@ class SpliceAI_Import(SpliceAI):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Import VCF files into spliceai database")
     parser.add_argument("--files", "-f", "--input", "-i", help="Path to files to import",
-                        default=["/opt/data/gnomad/vcf/exomes/gnomad.exomes.r2.0.2.sites.vcf.bgz"],
+                        default=["/opt/data/gnomad/vcf_utils/exomes/gnomad.exomes.r2.0.2.sites.vcf_utils.bgz"],
                         required=False, nargs='+')
     parser.add_argument("--database", help="Database/Namespace", default="spliceai")
     parser.add_argument("--host", help="DBMS host", default="localhost")
