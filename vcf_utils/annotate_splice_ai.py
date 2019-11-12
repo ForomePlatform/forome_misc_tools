@@ -51,7 +51,7 @@ def apply_calls(calls_file, output_file, header_file, tags, input_vcf):
     execute("bgzip -f {}".format(calls_file))
     execute("tabix -s1 -b2 -e2 -f {}.gz".format(calls_file))
     columns = ','.join(["CHROM", "POS"] + list(tags))
-    execute("bcftools annotate -a {}.gz -h {} -c {} -o {} {}".
+    execute("bcftools annotate -a {}.gz -h {} -c {} -O z -o {} {}".
         format(calls_file, header_file, columns, output_file, input_vcf))
 
 
@@ -59,7 +59,11 @@ def run(vcf_file):
     call_file = "splice_ai_calls.tsv"
     header_file = "splice_ai_calls.hdr"
     x = vcf_file.split('.')
-    x = x[:-1] + ["spliceai"] + x[-1:]
+    if ('vcf' in x):
+        idx = x.index('vcf')
+    else:
+        idx = -1
+    x = x[:idx] + ["spliceai"] + x[idx:]
     out_file = '.'.join(x)
     tags = OrderedDict()
     tags["SPLICE_AI_PRED"]=["String","Splice AI prediction for pathogenicity"]
