@@ -16,23 +16,26 @@ def call(vcf_file, call_file):
     n = 0
     m = 0
     with SpliceAI() as caller:
-        for record in vcf_reader:
-            n += 1
-            chromosome = record.CHROM
-            if chromosome.startswith("chr"):
-                chromosome = chromosome[3:]
-            pos = record.POS
-            alt_list = [s.sequence for s in record.ALT]
-            details, prediction, score = caller.get_all(chromosome, pos, record.REF, alt_list)
-            if prediction == "None":
-                continue
-            calls[(record.CHROM, pos)] = (details, prediction, score)
-            if (len(calls) > 1000):
-                m += len(calls)
-                flush(calls, call_file)
-                print "{}: {}; {} / {}".format(chromosome, pos, n, m)
+        try:
+            for record in vcf_reader:
+                n += 1
+                chromosome = record.CHROM
+                if chromosome.startswith("chr"):
+                    chromosome = chromosome[3:]
+                pos = record.POS
+                alt_list = [s.sequence for s in record.ALT]
+                details, prediction, score = caller.get_all(chromosome, pos, record.REF, alt_list)
+                if prediction == "None":
+                    continue
+                calls[(record.CHROM, pos)] = (details, prediction, score)
+                if (len(calls) > 1000):
+                    m += len(calls)
+                    flush(calls, call_file)
+                    print "{}: {}; {} / {}".format(chromosome, pos, n, m)
 
-            # print "Error in {}: {}".format(record.CHROM, pos)
+        except:
+            print "Error in {}: {}".format(record.CHROM, pos)
+            raise
             # print str(e)
 
         flush(calls, call_file)
