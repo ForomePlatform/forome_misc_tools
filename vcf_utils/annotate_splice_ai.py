@@ -16,8 +16,16 @@ def call(vcf_file, call_file):
     n = 0
     m = 0
     with SpliceAI() as caller:
-        try:
-            for record in vcf_reader:
+        while(True):
+            try:
+                record = vcf_reader.next()
+            except StopIteration:
+                break
+            except Exception as e:
+                print "Error after {}: {}".format(record.CHROM, pos)
+                print str(e)
+                continue
+            try:
                 n += 1
                 chromosome = record.CHROM
                 if chromosome.startswith("chr"):
@@ -33,10 +41,9 @@ def call(vcf_file, call_file):
                     flush(calls, call_file)
                     print "{}: {}; {} / {}".format(chromosome, pos, n, m)
 
-        except:
-            print "Error in {}: {}".format(record.CHROM, pos)
-            raise
-            # print str(e)
+            except Exception as e:
+                print "Error in {}: {}".format(record.CHROM, pos)
+                print str(e)
 
         flush(calls, call_file)
 
