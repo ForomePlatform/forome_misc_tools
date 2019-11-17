@@ -10,6 +10,46 @@ def execute(cmd):
     os.system(cmd)
 
 
+def annotate_table(path, columns, sep):
+    x = path.split('.')
+    idx = -1
+    x = x[:idx] + ["spliceai"] + x[idx:]
+    out_path = '.'.join(x)
+    n = 0
+    m = 0
+    with open(path) as input, open(out_path,"w") as output, SpliceAI() as caller:
+        line = input.readline()
+        c = columns[3] + 2
+        header = line.split(sep)
+        header1 = header[:c] + ["SPLICE_AI_PRED", "SPLICE_AI_SCORE"] + header[c:]
+        output.write(sep.join(header1))
+        while True:
+            line = input.readline()
+            if not line:
+                break
+            n += 1
+            data = line.split(sep)
+            chromosome = data[columns[0]]
+            if chromosome.startswith("chr"):
+                chromosome = chromosome[3:]
+            pos = data[columns[1]]
+            ref = data[columns[2]]
+            alt_list = [data[columns[3]]]
+            details, prediction, score = caller.get_all(chromosome, pos, ref,
+                                                        alt_list)
+            if prediction == "None":
+                prediction = ""
+                score = ""
+            else:
+                m += 1
+            data1 = data[:c] + [str(prediction), str(score)] + data[c:]
+            output.write(sep.join(data1))
+            if (n % 10 == 0):
+                print "{}: {}; {} / {}".format(chromosome, pos, n, m)
+                output.flush()
+        output.close()
+
+
 def call(vcf_file, call_file):
     vcf_reader = pyvcf.Reader(filename=vcf_file)
     calls = OrderedDict()
@@ -90,4 +130,7 @@ def run(vcf_file):
 
 
 if __name__ == '__main__':
-    run(sys.argv[1])
+    if ("vcf" in sys.argv[1]):
+        run(sys.argv[1])
+    else:
+        annotate_table(sys.argv[1], [2,3,4,5], '\t')
