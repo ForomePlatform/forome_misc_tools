@@ -44,7 +44,7 @@ def annotate_table(path, columns, sep):
                 m += 1
             data1 = data[:c] + [str(prediction), str(score)] + data[c:]
             output.write(sep.join(data1))
-            if (n % 10 == 0):
+            if (n % 200 == 0):
                 print "{}: {}; {} / {}".format(chromosome, pos, n, m)
                 output.flush()
         output.close()
