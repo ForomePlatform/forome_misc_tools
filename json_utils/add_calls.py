@@ -45,26 +45,39 @@ def read_calls(calls_file, header_file):
                     data[k] = ""
             calls[(key["CHROM"], int(key["POS"]))] = data
     print "Read {} calls".format(len(calls))
-    return calls
+    return calls, metadata
 
 
-def process_json(a_json, u_json, calls):
+def process_json(a_json, u_json, calls, replace, metadata):
     n = 0
     n1 = 0
+    n2 = 0
     for line in a_json:
         n += 1
         data = json.loads(line)
         if (n % 10000 == 0):
-            print "{}/{}".format(n, n1)
+            print "{}/{}/{}".format(n, n1, n2)
         if (data["record_type"] != "variant"):
             u_json.write(line)
             continue
+        edited = False
+        if replace:
+            for annotation in metadata:
+                c = data["view"]["bioinformatics"]["called_by"]
+                if annotation in c:
+                    c.remove(annotation)
+                    edited = True
+                    n2 += 1
         chrom = data["data"]["seq_region_name"]
         if not chrom.startswith("chr"):
             chrom = "chr" + chrom
         pos = int(data["data"]["start"])
-        if (chrom, pos) not in calls:
+        if not edited and (chrom, pos) not in calls:
             u_json.write(line)
+            continue
+        if edited and (chrom, pos) not in calls:
+            updated_line = json.dumps(data) + '\n'
+            u_json.write(updated_line)
             continue
         call = calls[(chrom, pos)]
         for caller in call:
@@ -77,7 +90,7 @@ def process_json(a_json, u_json, calls):
         u_json.write(updated_line)
 
 
-def update_json(json_file, calls):
+def update_json(json_file, calls, replace, metadata):
     input_path = json_file.split('.')
     is_gzip = input_path[-1] == 'gz'
     if is_gzip:
@@ -89,20 +102,22 @@ def update_json(json_file, calls):
 
     if is_gzip:
         with gzip.open(json_file) as a_json, gzip.open(output_file, "wb") as u_json:
-            process_json(a_json, u_json, calls)
+            process_json(a_json, u_json, calls, replace, metadata)
     else:
         with open(json_file) as a_json, open(output_file, "w") as u_json:
-            process_json(a_json, u_json, calls)
+            process_json(a_json, u_json, calls, replace, metadata)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Add calls annotation to anfisa json file")
     parser.add_argument("-i", "--input", dest = "input", help="Input JSON file", required=True)
     parser.add_argument("-c", "--calls", help="File with calls in tsv format", required=True)
     parser.add_argument("-d", "--header", help="VCF Header file", default="header.vcf_utils", required=True)
+    parser.add_argument("-r", "--replace", action="store_true",
+            help="Replace existing calls", required=False)
 
     args = parser.parse_args()
     print args
 
-    calls = read_calls(args.calls, args.header)
-    update_json(args.input, calls)
+    calls, metadata = read_calls(args.calls, args.header)
+    update_json(args.input, calls, args.replace, metadata)
 
