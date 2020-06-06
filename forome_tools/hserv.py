@@ -191,11 +191,11 @@ class HServHandler:
                 error = 500, content = msg + "\n" + rep_exc)
 
 #========================================
-def setupHServer(application, config_file, in_container):
+def setupHServer(application, config_file, in_container, home_path):
     if not os.path.exists(config_file):
         logging.critical("No config file provided (%s)" % config_file)
         sys.exit(2)
-    config = loadJSonConfig(config_file)
+    config = loadJSonConfig(config_file, home_path = home_path)
     logging_config = config.get("logging")
     if logging_config:
         logging.config.dictConfig(logging_config)
