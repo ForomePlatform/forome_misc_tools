@@ -1,0 +1,16 @@
+.eric6project/
+.ropeproject/
+.directory/
+*.pyc
+*.pyo
+*.orig
+*.bak
+*.rej
+*~
+cur/
+tmp/
+__pycache__/
+build/
+dist/
+forome_tools.egg-info/
+*.DS_Store
