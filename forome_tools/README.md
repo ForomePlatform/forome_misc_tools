@@ -47,6 +47,11 @@ and to compress each portion separatedly.
 The API includes compression and decompression implementation.
 An autonomous utility can compress and uncompress data.
 
+inventory.py
+============
+Provides support for a JSON-based format used for inventory
+of genomic data
+
 job_pool.py
 ==========
 The code provides implementation for job pool inside an application.

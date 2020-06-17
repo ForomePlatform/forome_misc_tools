@@ -18,12 +18,11 @@
 #  limitations under the License.
 #
 
-import sys, os, logging
+import os, logging, json
 from urllib.parse import parse_qs
 from cgi import parse_header, parse_multipart
 import logging.config
 
-from .json_conf import loadJSonConfig
 from .log_err import logException
 #========================================
 class HServResponse:
@@ -122,22 +121,28 @@ class HServHandler:
         if environ["REQUEST_METHOD"] == "POST":
             try:
                 content_type = environ.get('CONTENT_TYPE')
+                pdict = None
                 if content_type:
-                    ctype, pdict = parse_header(content_type)
-                    if ctype == 'multipart/form-data':
-                        for a, v in parse_multipart(
-                                environ['wsgi.input'], pdict).items():
-                            print("a=", a, "v=", v)
-                            query_args[a] = v[0]
-                    elif ctype != 'application/x-www-form-urlencoded':
-                        logging.error("Bad content type for POST: " + ctype)
-                    else:
-                        content_type = None
+                    content_type, pdict = parse_header(content_type)
                 if not content_type:
-                    rq_body_size = int(environ.get('CONTENT_LENGTH', 0))
-                    rq_body = environ['wsgi.input'].read(rq_body_size)
-                    for a, v in parse_qs(rq_body.decode("utf-8")).items():
+                    content_type = 'application/x-www-form-urlencoded'
+                if content_type == 'multipart/form-data':
+                    for a, v in parse_multipart(
+                            environ['wsgi.input'], pdict).items():
                         query_args[a] = v[0]
+                elif content_type in {'application/x-www-form-urlencoded',
+                        'application/json'}:
+                    rq_body_size = int(environ.get('CONTENT_LENGTH', 0))
+                    rq_body = environ['wsgi.input'].read(
+                        rq_body_size).decode("utf-8")
+                    if content_type == 'application/json':
+                        query_args["@request"] = json.loads(rq_body)
+                    else:
+                        pdict = parse_qs(rq_body)
+                        for a, v in pdict.items():
+                            query_args[a] = v[0]
+                else:
+                    logging.error("Bad content type for POST: " + content_type)
             except Exception:
                 logException("Exception on read request body")
 
@@ -191,11 +196,7 @@ class HServHandler:
                 error = 500, content = msg + "\n" + rep_exc)
 
 #========================================
-def setupHServer(application, config_file, in_container, home_path):
-    if not os.path.exists(config_file):
-        logging.critical("No config file provided (%s)" % config_file)
-        sys.exit(2)
-    config = loadJSonConfig(config_file, home_path = home_path)
+def setupHServer(application, config, in_container):
     logging_config = config.get("logging")
     if logging_config:
         logging.config.dictConfig(logging_config)

@@ -5,8 +5,8 @@ with open("forome_tools/README.md", "r") as fh:
 
 setuptools.setup(
     name = "forome_tools",
-    version = "0.1",
-    py_modules = ['forome_tools'] ,
+    version = "0.1.1",
+    py_modules = ['forome_tools'],
     author = "Sergey Trifonov, with colleagues",
     author_email = "trf@ya.ru",
     description = "Miscellaneous tools used in Forome Platform",
