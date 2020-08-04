@@ -114,7 +114,8 @@ class PeriodicalWorker(threading.Thread):
                 self.mFunc()
             except Exception:
                 logException("Periodic work %s failed" % self.mName)
-            self.mMaster._sleep(self.mTimeout)
+            if self.mMaster._sleep(self.mTimeout):
+                return
 
 #===============================================
 class JobPool:
@@ -208,6 +209,7 @@ class JobPool:
     def _sleep(self, timeout):
         with self.mThrCondition:
             self.mThrCondition.wait_for(lambda: self.mTerminating, timeout)
+            return self.mTerminating
 
     def askTaskStatus(self, task_uid):
         with self.mLock:
