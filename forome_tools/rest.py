@@ -44,8 +44,12 @@ class RestAgent:
             self.mPort = 80
         self.mName = name if name else url
 
+    def _reportCall(self, method, res):
+        logging.info("REST " + method  + " call: " + self.mName + " "
+            " response: " + str(res.status) + " reason: " + str(res.reason))
+
     def call(self, request_data, method = "POST",
-            add_path = "", json_rq_mode = True):
+            add_path = "", json_rq_mode = True, calm_mode = False):
         if request_data is not None:
             if json_rq_mode:
                 content = json.dumps(request_data, ensure_ascii = False)
@@ -60,10 +64,11 @@ class RestAgent:
         res = conn.getresponse()
         try:
             content = res.read()
-            logging.info("REST " + method  + " call: " + self.mName + " "
-                + add_path + " response: " + str(res.status)
-                + " reason: " + str(res.reason))
+            if not calm_mode:
+                self._reportCall(method, res)
             if res.status != 200:
+                if calm_mode:
+                    self._reportCall(method, res)
                 raise RuntimeError(("Rest call failure (%r):\n" % res.status)
                     + str(content, "utf-8") + '\n========')
         finally:

@@ -18,7 +18,7 @@
 #  limitations under the License.
 #
 
-VERSION = (0, 1, 2)
+VERSION = (0, 1, 3)
 
 def compatible(base_version):
     global VERSION
