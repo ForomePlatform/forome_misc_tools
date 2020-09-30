@@ -135,3 +135,44 @@ class AttrFuncPool:
         return ret_func
 
 #===============================================
+#===============================================
+class AttrFuncHelper:
+    @staticmethod
+    def singleGetter(vpath):
+        return _attrSingleGetter(vpath)
+
+    @staticmethod
+    def multiStrGetter(separator, path_seq):
+        return _multiStrAtrGetter(separator, path_seq)
+
+    @staticmethod
+    def getter(vpath):
+        if vpath.endswith('[]'):
+            return AttrFuncPool.makeFunc(vpath)
+        return _attrSingleGetter(vpath)
+
+#===============================================
+class _attrSingleGetter:
+    def __init__(self, vpath):
+        self.mFunc = AttrFuncPool.makeFunc(vpath)
+
+    def __call__(self, rec_data):
+        res = self.mFunc(rec_data)
+        if res is not None and len(res) > 0:
+            return res[0]
+        return None
+
+#===============================================
+class _multiStrAtrGetter:
+    def __init__(self, separator, path_seq):
+        self.mSeparator = separator
+        self.mFuncSeq = [AttrFuncPool.makeFunc(vpath)
+            for vpath in path_seq]
+
+    def __call__(self, rec_data):
+        values = []
+        for func in self.mFuncSeq:
+            vvv = func(rec_data)
+            assert len(vvv) > 0, "Not found data path: " + func.getPathRepr()
+            values.append(vvv[0])
+        return self.mSeparator.join(map(str, values))

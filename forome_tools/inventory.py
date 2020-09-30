@@ -92,7 +92,7 @@ def loadDatasetInventory(inv_file):
                 assert False
         else:
             assert key.isalnum()
-            content = _processAlias(key, value, aliases_done)
+            content = _processAlias(content, key, value, aliases_done)
 
     # Ready to go
     return json.loads(content)
