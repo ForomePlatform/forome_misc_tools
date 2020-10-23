@@ -27,7 +27,7 @@ from threading import Lock
 #===============================================
 class IndexBZ2:
     def __init__(self, fname):
-        self.mFile = open(fname, 'r+b')
+        self.mFile = open(fname, 'rb')
         self.mLock = Lock()
         assert b'IdxBZ2' == self._read(0, 6)
         tab_loc = array('L')

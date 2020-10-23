@@ -19,7 +19,7 @@
 #
 
 import json, logging
-from urllib.parse import urlsplit
+from urllib.parse import urlsplit, quote
 from http.client import HTTPConnection
 
 #==================================
@@ -33,16 +33,19 @@ class RestAgent:
             "Encoding": "utf-8"},
     }
 
-    def __init__(self, url, name = None, header_type = "json"):
+    def __init__(self, url, name = None, header_type = "json",
+            calm_mode = False):
         url_info = urlsplit(url)
         assert url_info.scheme == "http"
         self.mHost = url_info.hostname
         self.mPort = url_info.port
         self.mPath = url_info.path
+        self.mHeaderType = header_type
         self.mHeaders = self.sHeadersTab[header_type]
         if self.mPort is None:
             self.mPort = 80
         self.mName = name if name else url
+        self.mCalmMode = calm_mode
 
     def _reportCall(self, method, res):
         logging.info("REST " + method  + " call: " + self.mName + " "
@@ -51,7 +54,11 @@ class RestAgent:
     def call(self, request_data, method = "POST",
             add_path = "", json_rq_mode = True, calm_mode = False):
         if request_data is not None:
-            if json_rq_mode:
+            if self.mHeaderType == "www":
+                assert isinstance(request_data, dict)
+                content = "&".join("%s=%s" % (key, quote(str(val)))
+                    for key, val in request_data.items())
+            elif json_rq_mode:
                 content = json.dumps(request_data, ensure_ascii = False)
             else:
                 content = request_data
@@ -64,7 +71,7 @@ class RestAgent:
         res = conn.getresponse()
         try:
             content = res.read()
-            if not calm_mode:
+            if not calm_mode and not self.mCalmMode:
                 self._reportCall(method, res)
             if res.status != 200:
                 if calm_mode:
