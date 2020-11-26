@@ -18,33 +18,62 @@
 #  limitations under the License.
 #
 import logging
+from shutil import which
 from subprocess import Popen, PIPE
 
 #===============================================
 class SphinxDocumentationSet:
-    def __init__(self, title, path_source, path_build, path_url,
-            top_index = "index.html"):
-        self.mTitle = title
-        self.mPathSource = path_source
-        self.mPathBuild = path_build
-        self.mPathUrl = path_url
-        self.mTopIndex = top_index
-        self.activate()
+    def __init__(self, descriptor):
+        if not isinstance(descriptor, dict):
+            logging.error("Imporper Sphinx document-set "
+                "descriptor in configuration")
+            assert False
+        self.mId = descriptor["id"]
+        self.mTitle = descriptor["title"]
+        self.mPathUrl = descriptor.get("url")
+        self.mTopIndex = descriptor.get("index", "index.html")
+
+        if not self.mPathUrl:
+            self.activate(descriptor.get("source"),
+                descriptor.get("build"), descriptor.get("path"))
+        else:
+            logging.info("Sphinx doc set %s refers to %s"
+                % (self.mId, self.mPathUrl))
 
     def getTitle(self):
         return self.mTitle
+
+    def getId(self):
+        return self.mId
 
     def getUrl(self, doc_name = None):
         if doc_name is None:
             doc_name = self.mTopIndex
         return self.mPathUrl + doc_name
 
-    def activate(self):
+    def dump(self):
+        return {
+            "id": self.mId,
+            "title": self.mTitle,
+            "url": self.mPathUrl}
+
+    def activate(self, path_source, path_build, local_path):
+        if which("sphinx-build") is None:
+            logging.error("Install sphinx utility "
+                "or skip Sphinx documentation generation")
+            assert False
+            return
+        if (not path_source or not path_build or not local_path):
+            logging.error("Imporper document-set descriptor "
+                "build in configuration")
+            assert False
+            return
         proc = Popen(["sphinx-build", "-b", "html", "-a", "-q",
-            self.mPathSource, self.mPathBuild],
+            path_source, path_build],
             stdout = PIPE, stderr = PIPE)
         s_outputs = proc.communicate()
-        report = ["Spinx doc set %s activated:" % self.mPathSource]
+        report = ["Spinx doc set %s activated with source %s:"
+            % (self.mId, path_source)]
         if s_outputs[0]:
             report.append("<stdout>")
             report.append(str(s_outputs[0], "utf-8"))
@@ -54,3 +83,4 @@ class SphinxDocumentationSet:
         if len(report) == 1:
             report.append("<done>")
         logging.info("\n".join(report))
+        self.mPathUrl = local_path
