@@ -38,7 +38,34 @@ class HServResponse:
         "xlsx":   (
             "application/application/"
             "vnd.openxmlformats-officedocument.spreadsheetml.sheet"),
-        "xml":    "text/xml"
+        "xml":    "text/xml",
+
+        # Standard file format list
+        "doc":    "application/msword",
+        "docx":   "application/"
+            "vnd.openxmlformats-officedocument.wordprocessingml.document",
+        "epub":   "application/epub+zip",
+        "gz":     "application/gzip",
+        "gif":    "image/gif",
+        "ico":    "image/vnd.microsoft.icon",
+        "jar":    "application/java-archive",
+        "jpg":    "image/jpeg",
+        "mp3":    "audio/mpeg",
+        "mpg":    "video/mpeg",
+        "odp":    "application/vnd.oasis.opendocument.presentation",
+        "ods":    "application/vnd.oasis.opendocument.spreadsheet",
+        "odt":    "application/vnd.oasis.opendocument.text",
+        "pdf":    "application/pdf",
+        "ppt":    "application/vnd.ms-powerpoint",
+        "pptx":   "application/"
+            "vnd.openxmlformats-officedocument.presentationml.presentation",
+        "rar":    "application/vnd.rar",
+        "rtf":    "application/rtf",
+        "svg":    "image/svg+xml",
+        "tar":    "application/x-tar",
+        "wav":    "audio/wav",
+        "xls":    "application/vnd.ms-excel",
+        "zip":    "application/zip"
     }
 
     sErrorCodes = {
@@ -46,6 +73,7 @@ class HServResponse:
         204: "204 No Content",
         303: "303 See Other",
         400: "400 Bad Request",
+        403: "403 Forbidden",
         408: "408 Request Timeout",
         404: "404 Not Found",
         422: "422 Unprocessable Entity",
@@ -175,6 +203,22 @@ class HServHandler:
             without_decoding = without_decoding)
 
     #===============================================
+    def _makeResponceException(self, rq_descr, resp_h,
+            assertion_text = None):
+        msg = "Exception on evaluation"
+        error_code = 500
+        if assertion_text and not assertion_text.startswith('!'):
+            msg = "Improper call"
+            error_code = 403
+        if assertion_text:
+            msg += "\n Error: " + assertion_text
+        if rq_descr:
+            msg += "\n In context: " + " ".join(rq_descr)
+        rep_exc = logException(msg)
+        return resp_h.makeResponse(mode = "txt",
+            error = error_code, content = msg + "\n" + rep_exc)
+
+    #===============================================
     def processRq(self, environ, start_response):
         resp_h = HServResponse(start_response)
         rq_descr = []
@@ -188,13 +232,11 @@ class HServHandler:
                     return ret
             return self.mApplication.request(
                 resp_h, rq_path, query_args, rq_descr)
+        except AssertionError as exc:
+            return self._makeResponceException(rq_descr, resp_h,
+                exc.args[0] if len(exc.args) > 0 else None)
         except Exception:
-            msg = "Exception on request evaluation"
-            if rq_descr:
-                msg += "\n In context: " + " ".join(rq_descr)
-            rep_exc = logException(msg)
-            return resp_h.makeResponse(mode = "txt",
-                error = 500, content = msg + "\n" + rep_exc)
+            return self._makeResponceException(rq_descr, resp_h)
 
 #========================================
 def setupHServer(application, config, in_container):
