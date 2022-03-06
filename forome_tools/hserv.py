@@ -46,6 +46,7 @@ class HServResponse:
             "vnd.openxmlformats-officedocument.wordprocessingml.document",
         "epub":   "application/epub+zip",
         "gz":     "application/gzip",
+        "tgz":    "application/gzip",
         "gif":    "image/gif",
         "ico":    "image/vnd.microsoft.icon",
         "jar":    "application/java-archive",
@@ -149,21 +150,21 @@ class HServHandler:
 
         if environ["REQUEST_METHOD"] == "POST":
             try:
-                content_type = environ.get('CONTENT_TYPE')
-                pdict = None
-                if content_type:
-                    content_type, pdict = parse_header(content_type)
+                content_type, pdict = None, None
+                if 'CONTENT_TYPE' in environ:
+                    content_type, pdict = parse_header(environ.get('CONTENT_TYPE'))
                 if not content_type:
                     content_type = 'application/x-www-form-urlencoded'
                 if content_type == 'multipart/form-data':
+                    pdict['boundary'] = bytes(pdict['boundary'], "utf-8")
+                    pdict['CONTENT-LENGTH'] = int(environ.get('CONTENT_LENGTH', 0))
                     for a, v in parse_multipart(
                             environ['wsgi.input'], pdict).items():
                         query_args[a] = v[0]
                 elif content_type in {'application/x-www-form-urlencoded',
                         'application/json'}:
                     rq_body_size = int(environ.get('CONTENT_LENGTH', 0))
-                    rq_body = environ['wsgi.input'].read(
-                        rq_body_size).decode("utf-8")
+                    rq_body = environ['wsgi.input'].read(rq_body_size).decode("utf-8")
                     if content_type == 'application/json':
                         query_args["@request"] = json.loads(rq_body)
                     else:

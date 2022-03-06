@@ -218,12 +218,8 @@ class InputReader(threading.Thread):
 
 #===============================================
 if __name__ == "__main__":
-    import sys, codecs
+    import sys
     from argparse import ArgumentParser
-
-    sys.stdin  = codecs.getreader('utf8')(sys.stdin.detach())
-    sys.stderr = codecs.getwriter('utf8')(sys.stderr.detach())
-    sys.stdout = codecs.getwriter('utf8')(sys.stdout.detach())
 
     parser = ArgumentParser()
     parser.add_argument("--block",  type = int, default = 2**19,

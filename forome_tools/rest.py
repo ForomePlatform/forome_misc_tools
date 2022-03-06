@@ -20,7 +20,7 @@
 
 import json, logging
 from urllib.parse import urlsplit, quote
-from http.client import HTTPConnection
+from http.client import HTTPConnection, HTTPSConnection
 
 #==================================
 class RestAgent:
@@ -36,7 +36,8 @@ class RestAgent:
     def __init__(self, url, name = None, header_type = "json",
             calm_mode = False):
         url_info = urlsplit(url)
-        assert url_info.scheme == "http"
+        self.mScheme = url_info.scheme
+        assert url_info.scheme in ("http", "https")
         self.mHost = url_info.hostname
         self.mPort = url_info.port
         self.mPath = url_info.path
@@ -52,7 +53,8 @@ class RestAgent:
             " response: " + str(res.status) + " reason: " + str(res.reason))
 
     def call(self, request_data, method = "POST",
-            add_path = "", json_rq_mode = True, calm_mode = False):
+            add_path = "", json_rq_mode = True, calm_mode = False,
+            plain_return = False):
         if request_data is not None:
             if self.mHeaderType == "www":
                 assert isinstance(request_data, dict)
@@ -64,7 +66,12 @@ class RestAgent:
                 content = request_data
         else:
             content = ""
-        conn = HTTPConnection(self.mHost, self.mPort)
+
+        if self.mScheme == "http":
+            conn = HTTPConnection(self.mHost, self.mPort)
+        else:
+            conn = HTTPSConnection(self.mHost, self.mPort)
+
         rq_path = self.mPath + add_path
         conn.request(method, rq_path,
             body = content.encode("utf-8"), headers = self.mHeaders)
@@ -80,6 +87,9 @@ class RestAgent:
                     + str(content, "utf-8") + '\n========')
         finally:
             res.close()
+            del conn
+        if plain_return:
+            return content
         if method == "DELETE":
             return None
         return json.loads(str(content, 'utf-8'))
