@@ -72,7 +72,7 @@ class SphinxDocumentationSet:
             path_source, path_build],
             stdout = PIPE, stderr = PIPE)
         s_outputs = proc.communicate()
-        report = ["Spinx doc set %s activated with source %s and build %s"
+        report = ["Sphinx doc set %s activated with source %s and build %s"
             % (self.mId, path_source, path_build)]
         if s_outputs[0]:
             report.append("<stdout>")
