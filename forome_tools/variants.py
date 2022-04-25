@@ -45,7 +45,9 @@ class VariantSet:
                 idx_set.add(pos)
         return idx_set
 
-    def makeValueSet(self, idx_set):
+    def makeValueSet(self, idx_set = None):
+        if idx_set is None:
+            return set(self.mVarDict.keys())
         return {self.mVariants[pos] for pos in idx_set}
 
     def indexOf(self, variant):
