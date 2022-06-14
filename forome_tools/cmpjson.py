@@ -421,7 +421,7 @@ if __name__ == "__main__":
             print("Use %s=%s as filtation" % (key, val), file = sys.stderr)
 
     prim_key_instr = run_args.primarykey
-    if '|' in prim_key_instr:
+    if prim_key_instr is not None and '|' in prim_key_instr:
         prim_key1, prim_key2 = prim_key_instr.split('|')
     else:
         prim_key1 = prim_key2 = prim_key_instr

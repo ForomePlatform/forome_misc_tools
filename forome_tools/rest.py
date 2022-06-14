@@ -18,7 +18,7 @@
 #  limitations under the License.
 #
 
-import json, logging
+import json, bson, logging
 from urllib.parse import urlsplit, quote
 from http.client import HTTPConnection, HTTPSConnection
 
@@ -76,6 +76,7 @@ class RestAgent:
         conn.request(method, rq_path,
             body = content.encode("utf-8"), headers = self.mHeaders)
         res = conn.getresponse()
+        bson_mode = res.getheader("Content-Type") == "application/bson"
         try:
             content = res.read()
             if not calm_mode and not self.mCalmMode:
@@ -92,4 +93,6 @@ class RestAgent:
             return content
         if method == "DELETE":
             return None
+        if bson_mode:
+            return bson.decode(content)
         return json.loads(str(content, 'utf-8'))

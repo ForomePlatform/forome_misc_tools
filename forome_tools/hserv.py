@@ -32,6 +32,7 @@ class HServResponse:
         "html":   "text/html",
         "js":     "application/javascript",
         "json":   "application/json",
+        "bson":   "application/bson",
         "png":    "image/png",
         "txt":    "text/plain",
         "csv":    "text/csv",
