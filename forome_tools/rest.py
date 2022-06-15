@@ -18,10 +18,10 @@
 #  limitations under the License.
 #
 
-import json, pybson, logging
+import json, logging
 from urllib.parse import urlsplit, quote
 from http.client import HTTPConnection, HTTPSConnection
-
+from .bson_adapter import BsonAdapter
 #==================================
 class RestAgent:
     sHeadersTab = {
@@ -94,5 +94,5 @@ class RestAgent:
         if method == "DELETE":
             return None
         if bson_mode:
-            return pybson.loads(content)
+            return BsonAdapter.decode(content)
         return json.loads(str(content, 'utf-8'))
