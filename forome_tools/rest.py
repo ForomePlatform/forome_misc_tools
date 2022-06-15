@@ -18,7 +18,7 @@
 #  limitations under the License.
 #
 
-import json, bson, logging
+import json, pybson, logging
 from urllib.parse import urlsplit, quote
 from http.client import HTTPConnection, HTTPSConnection
 
@@ -94,5 +94,5 @@ class RestAgent:
         if method == "DELETE":
             return None
         if bson_mode:
-            return bson.decode(content)
+            return pybson.loads(content)
         return json.loads(str(content, 'utf-8'))
