@@ -19,9 +19,9 @@
 #
 
 import os, logging, json
-from urllib.parse import parse_qs
-from cgi import parse_header, parse_multipart
 import logging.config
+from urllib.parse import parse_qs
+from multipart import parse_form_data
 
 from .log_err import logException
 #========================================
@@ -151,32 +151,15 @@ class HServHandler:
 
         if environ["REQUEST_METHOD"] == "POST":
             try:
-                content_type, pdict = None, None
-                if 'CONTENT_TYPE' in environ:
-                    content_type, pdict = parse_header(environ.get('CONTENT_TYPE'))
-                if not content_type:
-                    content_type = 'application/x-www-form-urlencoded'
-                if content_type == 'multipart/form-data':
-                    pdict['boundary'] = bytes(pdict['boundary'], "utf-8")
-                    pdict['CONTENT-LENGTH'] = int(environ.get('CONTENT_LENGTH', 0))
-                    for a, v in parse_multipart(
-                            environ['wsgi.input'], pdict).items():
-                        query_args[a] = v[0]
-                elif content_type in {'application/x-www-form-urlencoded',
-                        'application/json'}:
-                    rq_body_size = int(environ.get('CONTENT_LENGTH', 0))
-                    rq_body = environ['wsgi.input'].read(rq_body_size).decode("utf-8")
-                    if content_type == 'application/json':
-                        query_args["@request"] = json.loads(rq_body)
-                    else:
-                        pdict = parse_qs(rq_body)
-                        for a, v in pdict.items():
-                            query_args[a] = v[0]
-                else:
-                    logging.error("Bad content type for POST: " + content_type)
+                forms, files = parse_form_data(environ)
+                for a, v in forms.iterallitems():
+                    query_args[a] = v
+                for ff in files:
+                    if ff.content_type == "application/json":
+                        query_args["@request"] = json.loads(ff.read())
             except Exception:
-                logException("Exception on read request body")
-
+                logException("Exception on read request body, ",
+                    f"ContentType: {environ.get('CONTENT_TYPE')}")
         return rq_path, query_args
 
     #===============================================

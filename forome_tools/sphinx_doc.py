@@ -40,6 +40,9 @@ class SphinxDocumentationSet:
             logging.info("Sphinx doc set %s refers to %s"
                 % (self.mId, self.mPathUrl))
 
+    def isActive(self):
+        return self.mPathUrl is not None
+
     def getTitle(self):
         return self.mTitle
 
@@ -61,12 +64,12 @@ class SphinxDocumentationSet:
         if which("sphinx-build") is None:
             logging.error("Install sphinx utility "
                 "or skip Sphinx documentation generation")
-            assert False
+            #  assert False
             return
         if (not path_source or not path_build or not local_path):
-            logging.error("Imporper document-set descriptor "
+            logging.error("Improper document-set descriptor "
                 "build in configuration")
-            assert False
+            #  assert False
             return
         proc = Popen(["sphinx-build", "-b", "html", "-a", "-q",
             path_source, path_build],

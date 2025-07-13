@@ -23,7 +23,7 @@ import numbers
 #===============================================
 class Types:
     sTypes = [None, "null", "list", "dict", "empty", "link", "string",
-        "int", "numeric"]
+        "bool", "int", "numeric"]
     # and "undef", "json"
 
     @staticmethod
@@ -41,10 +41,12 @@ class Types:
                 if value.startswith("https:") or value.startswith("http:"):
                     return [5, 6]
             return [6]
+        elif value is True or value is False:
+            return [7, 8, 9]
         elif isinstance(value, int):
-            return [7, 8]
+            return [8, 9]
         elif isinstance(value, numbers.Number):
-            return [8]
+            return [9]
         # convert everything another to string
         return [6]
 
@@ -72,7 +74,7 @@ class Types:
 #===============================================
 class TypeCounter:
     def __init__(self, req_type = None):
-        self.mCounts = [0] * 9
+        self.mCounts = [0] * 10
         self.mReqType = Types.typeIdx(req_type)
 
     def regValue(self, value):
@@ -101,7 +103,7 @@ class TypeCounter:
             ret = self._checkType(self.mReqType, with_optional)
             if ret:
                 return ret
-        for idx in range(2, 9):
+        for idx in range(2, 10):
             ret = self._checkType(idx, with_optional)
             if ret:
                 return ret
