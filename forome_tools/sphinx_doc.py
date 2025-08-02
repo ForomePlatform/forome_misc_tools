@@ -17,7 +17,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-import logging
+import os, logging
 from shutil import which
 from subprocess import Popen, PIPE
 
@@ -61,17 +61,21 @@ class SphinxDocumentationSet:
             "url": self.mPathUrl}
 
     def activate(self, path_source, path_build, local_path):
-        if which("sphinx-build") is None:
-            logging.error("Install sphinx utility "
-                "or skip Sphinx documentation generation")
-            #  assert False
-            return
+        sphinx_build_exe = os.environ.get("SPHINX_BUILD")
+        if sphinx_build_exe is None:
+            if which("sphinx-build") is None:
+                logging.error("Install sphinx utility sphinx-build\n"
+                    "or skip Sphinx documentation generation\n"
+                    "or set environment SPHINX_BUILD")
+                #  assert False
+                return
+            sphinx_build_exe = "sphinx-build"
         if (not path_source or not path_build or not local_path):
             logging.error("Improper document-set descriptor "
                 "build in configuration")
             #  assert False
             return
-        proc = Popen(["sphinx-build", "-b", "html", "-a", "-q",
+        proc = Popen([sphinx_build_exe, "-b", "html", "-a", "-q",
             path_source, path_build],
             stdout = PIPE, stderr = PIPE)
         s_outputs = proc.communicate()

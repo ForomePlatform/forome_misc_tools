@@ -56,6 +56,7 @@ class YProperty:
         return self.mType(val)
 
     def getValue(self, obj, check_it=True):
+        assert isinstance(obj, dict), repr(obj)
         val = obj.get(self.mName)
         if val is None:
             val = self.mDefaultValue
@@ -110,9 +111,14 @@ class YClass:
     def loadFile(self, fname, check_it=True):
         with open(fname, "r", encoding="utf-8") as inp:
             obj = yaml.load(inp.read(), yaml.Loader)
+        if isinstance(obj, list):
+            return [self.getValue(it, check_it) for it in obj]
         return self.getValue(obj, check_it)
 
     def saveFile(self, fname, data):
-        form_data = self.getValue(data)
+        if isinstance(data, list):
+            form_data = [self.getValue(it) for it in data]
+        else:
+            form_data = self.getValue(data)
         with open(fname, "w", encoding="utf-8") as outp:
             outp.write(yaml.dump(form_data, sort_keys=False, allow_unicode=True))

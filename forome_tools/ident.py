@@ -22,6 +22,11 @@ import re
 #==================================
 sIdPatt = re.compile("^[A-Z_][A-Z0-9_]*$", re.I)
 
-def checkIdentifier(val):
-    global sIdPatt
+sIdExtPatt = re.compile("^[A-Z_-][A-Z0-9_-]*$", re.I)
+
+def checkIdentifier(val, ext_mode=False):
+    global sIdPatt, sIdExtPatt
+    if ext_mode:
+        return sIdExtPatt.match(val)
     return sIdPatt.match(val)
+
